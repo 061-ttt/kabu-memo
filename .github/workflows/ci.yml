@@ -92,6 +92,7 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
           ALLOWED_EMAILS: ${{ secrets.ALLOWED_EMAILS }}
+          JQUANTS_API_KEY: ${{ secrets.JQUANTS_API_KEY }}
         run: |
           node -e '
             const crypto = require("node:crypto");
@@ -100,6 +101,7 @@ jobs:
               GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
               SESSION_SECRET: process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex"),
               ALLOWED_EMAILS: process.env.ALLOWED_EMAILS,
+              JQUANTS_API_KEY: process.env.JQUANTS_API_KEY,
             };
             for (const k of Object.keys(out)) if (!out[k]) delete out[k];
             require("node:fs").writeFileSync("secrets.json", JSON.stringify(out));

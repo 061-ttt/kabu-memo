@@ -14,8 +14,9 @@
   "ai": { "binding": "AI" },
   "vars": {
     "AI_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    "AI_VISION_MODEL": "@cf/google/gemma-4-26b-a4b-it",
     "AI_DAILY_LIMIT": "60"
   },
-  // GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / SESSION_SECRET / ALLOWED_EMAILS は wrangler secret で設定
+  // GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / SESSION_SECRET / ALLOWED_EMAILS / JQUANTS_API_KEY は wrangler secret で設定
   "observability": { "enabled": true }
 }

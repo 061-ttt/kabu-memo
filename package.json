@@ -16,13 +16,11 @@
   },
   "dependencies": {
     "hono": "^4.13.19",
-    "preact": "^10.29.8",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261118.1",
     "@playwright/test": "1.63",
-    "@preact/preset-vite": "^2.10.6",
     "@types/node": "^22.20.5",
     "typescript": "5.9",
     "vite": "^7.3.8",

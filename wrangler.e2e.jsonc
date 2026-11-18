@@ -1,4 +1,4 @@
-// E2Eテスト専用。Workers AI と外部株価APIは模擬、Google OAuth は tests/e2e/mock-google.ts に向ける
+// E2Eテスト専用。Workers AI は模擬、J-Quants は tests/e2e/mock-jquants.mjs、Google OAuth は tests/e2e/mock-google.mjs に向ける
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "kabu-memo-e2e",
@@ -13,7 +13,8 @@
   "d1_databases": [{ "binding": "DB", "database_name": "kabu-memo-e2e", "database_id": "e2e-local", "migrations_dir": "migrations" }],
   "vars": {
     "AI_MODE": "mock",
-    "MARKET_MODE": "mock",
+    "JQUANTS_API_KEY": "e2e-jquants-key",
+    "JQUANTS_BASE": "http://127.0.0.1:8791/v2",
     "AI_DAILY_LIMIT": "5",
     "GOOGLE_CLIENT_ID": "e2e-client",
     "GOOGLE_CLIENT_SECRET": "e2e-secret",

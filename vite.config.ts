@@ -55,6 +55,5 @@ export default defineConfig({
   publicDir: 'public',
   base: local ? './' : '/',
   build: { outDir: local ? '../../dist-local' : '../../dist', emptyOutDir: true, target: 'es2022', modulePreload: { polyfill: false } },
-  esbuild: { jsx: 'automatic', jsxImportSource: 'preact' },
   plugins: [securityHeaders()],
 });

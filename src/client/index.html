@@ -2,79 +2,45 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="theme-color" content="#f5f6fa">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F4ECDA">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="color-scheme" content="light">
-<title>株メモ</title>
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" href="/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/icon-180.png">
+<meta name="apple-mobile-web-app-title" content="相場帖">
+<title>相場帖</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-64.png" type="image/png">
+<link rel="apple-touch-icon" href="./icon-180.png">
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-<div class="aura" aria-hidden="true"><i></i><i></i><i></i></div>
-
-<header class="top glass" id="top">
-  <span class="brand">株メモ</span>
-  <div class="date-slot" id="date-slot"><span class="date-static" id="date-static"></span></div>
-  <div class="user-slot" id="user-slot"></div>
-</header>
-
-<main class="shell">
-  <section class="composer glass" id="composer">
-    <div class="composer-row">
-      <textarea id="memo-input" class="memo-input" rows="1" placeholder="メモ" aria-label="メモ" autocomplete="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
-      <button type="button" id="memo-save" class="send" aria-label="保存">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
+<header class="top">
+  <div class="bar1">
+    <div class="brand"><span class="seal" aria-hidden="true">帖</span><b>相場帖</b><small>備忘録</small></div>
+    <nav class="datenav" aria-label="日付">
+      <button id="prevDay" aria-label="前の営業日">‹</button>
+      <span class="dl" id="dateLabel"></span>
+      <button class="today" id="todayBtn" hidden>今日</button>
+      <button id="nextDay" aria-label="次の営業日">›</button>
+    </nav>
+    <div class="tools">
+      <div class="fontctl" aria-label="文字サイズ"><button id="fontDn" aria-label="文字を小さく">A−</button><span id="fontPct">100%</span><button id="fontUp" aria-label="文字を大きく">A+</button></div>
+      <button class="tbtn" id="soundBtn" aria-label="効果音" aria-pressed="false"></button>
+      <button class="tbtn" id="modeBtn" aria-label="ダークモード切り替え"></button>
+      <span id="acctSlot"></span>
+      <button class="tbtn" id="moreBtn" aria-label="メニュー"></button>
+      <span class="clock" id="clock" aria-label="現在時刻"></span><span class="sync off" id="syncDot" title="この端末に保存"></span>
     </div>
-    <div class="chips" id="memo-chips" aria-live="polite"></div>
-  </section>
-  <script>
-  (function () {
-    window.__kmBoot = 1;
-    var t = document.getElementById('memo-input'), K = 'km:draft', Q = 'km:bootq';
-    try { var d = localStorage.getItem(K); if (d) t.value = d; } catch (e) {}
-    t.addEventListener('input', function () { try { localStorage.setItem(K, t.value); } catch (e) {} });
-    function save() {
-      var v = t.value.trim(); if (!v) return;
-      if (window.__kmSave) return window.__kmSave(v);
-      try {
-        var q = JSON.parse(localStorage.getItem(Q) || '[]');
-        q.push({ id: crypto.randomUUID(), body: v, at: Date.now() });
-        localStorage.setItem(Q, JSON.stringify(q)); localStorage.removeItem(K);
-      } catch (e) { return; }
-      t.value = ''; t.classList.remove('saved'); void t.offsetWidth; t.classList.add('saved');
-    }
-    document.getElementById('memo-save').addEventListener('click', function () { save(); t.focus(); });
-    t.addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); save(); } });
-    var n = new Date(Date.now() + 324e5), w = '日月火水木金土';
-    document.getElementById('date-static').textContent = (n.getUTCMonth() + 1) + '月' + n.getUTCDate() + '日(' + w[n.getUTCDay()] + ')';
-    try { t.focus({ preventScroll: true }); t.setSelectionRange(t.value.length, t.value.length); } catch (e) {}
-  })();
-  </script>
-
-  <div id="app" class="app">
-    <div class="view skel-screen" data-testid="skeleton" aria-busy="true" aria-label="読み込み中">
-      <div class="skel-card"><i class="sk w40"></i><i class="sk w90"></i><i class="sk w70"></i></div>
-      <div class="skel-card"><i class="sk w30"></i><i class="sk w80"></i><i class="sk w60"></i></div>
-      <div class="skel-card"><i class="sk w50"></i><i class="sk w90"></i><i class="sk w40"></i></div>
-      <div class="skel-card"><i class="sk w40"></i><i class="sk w70"></i><i class="sk w80"></i></div>
-      <div class="skel-card"><i class="sk w30"></i><i class="sk w90"></i><i class="sk w50"></i></div>
-    </div>
-    <nav class="tabbar glass" aria-hidden="true"><span class="tab"><i class="sk sk-ico"></i></span><span class="tab"><i class="sk sk-ico"></i></span><span class="tab"><i class="sk sk-ico"></i></span></nav>
   </div>
-</main>
-
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <filter id="lg-refract" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-    <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="7" result="n"/>
-    <feGaussianBlur in="n" stdDeviation="2" result="nb"/>
-    <feDisplacementMap in="SourceGraphic" in2="nb" scale="38" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-</svg>
-<script type="module" src="./main.tsx"></script>
+  <div class="tabs" role="tablist" id="tabs"></div>
+</header>
+<main id="main"></main>
+<footer class="disc" id="disc">投資助言ではありません。株価・指標は J-Quants（JPX総研）などから取得したもので、売買の前に元の情報源で確かめてください。</footer>
+<div id="dockHost"></div>
+<button class="cat walk" id="cat" aria-label="こばんに話しかける"></button>
+<div class="bubble" id="bubble" role="status" hidden></div>
+<div class="toast" id="toast" role="status" data-testid="toast"></div>
+<datalist id="themes"></datalist>
+<script type="module" src="./app.js"></script>
 </body>
 </html>

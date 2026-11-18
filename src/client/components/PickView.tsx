@@ -184,7 +184,8 @@ export function PickSheet({ id }: { id: string }) {
   };
   const setMetric = (k: keyof Metrics, raw: string) => {
     const v = raw.trim() === '' ? null : Number(toHalfWidth(raw).replace(/[,，%％倍]/g, ''));
-    update({ metrics: { ...pick.metrics, [k]: v == null || Number.isNaN(v) ? null : v } });
+    const cur = getState().picks[id]?.metrics ?? {};
+    update({ metrics: { ...cur, [k]: v == null || Number.isNaN(v) ? null : v } });
   };
 
   return (
@@ -251,7 +252,8 @@ export function PickSheet({ id }: { id: string }) {
           value={pick.metrics.marketCap == null ? null : pick.metrics.marketCap / 1e8}
           onSave={(v) => {
             const n = Number(toHalfWidth(v).replace(/[,，]/g, ''));
-            update({ metrics: { ...pick.metrics, marketCap: v.trim() === '' || Number.isNaN(n) ? null : n * 1e8 } });
+            const cur = getState().picks[id]?.metrics ?? {};
+            update({ metrics: { ...cur, marketCap: v.trim() === '' || Number.isNaN(n) ? null : n * 1e8 } });
           }}
           display={fmtCap(pick.metrics.marketCap)}
           i={4}
@@ -333,8 +335,9 @@ function PriceBlock({ market }: { market: Market | undefined }) {
 }
 
 function MetricInput({ label, unit, value, onSave, display, i }: { label: string; unit?: string; value: number | null | undefined; onSave: (v: string) => void; display?: string; i: number }) {
-  const [focus, setFocus] = useState(false);
-  const shown = focus ? (value ?? '') : display ?? (value == null ? '' : String(value));
+  // 入力中は手元の下書きを表示する（入力中に画面が再描画されても打った値が消えないように）
+  const [draft, setDraft] = useState<string | null>(null);
+  const shown = draft ?? display ?? (value == null ? '' : String(value));
   return (
     <div class="metric" style={{ '--i': i }}>
       <label>{label}</label>
@@ -343,10 +346,11 @@ function MetricInput({ label, unit, value, onSave, display, i }: { label: string
           inputMode="decimal"
           value={shown}
           placeholder="—"
-          onFocus={() => setFocus(true)}
+          onFocus={() => setDraft(value == null ? '' : String(value))}
+          onInput={(e) => setDraft((e.target as HTMLInputElement).value)}
           onBlur={(e) => {
-            setFocus(false);
             const v = (e.target as HTMLInputElement).value;
+            setDraft(null);
             if (v !== String(value ?? '')) onSave(v);
           }}
           aria-label={label}

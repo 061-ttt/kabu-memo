@@ -1,6 +1,8 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 export const MOCK = 'http://127.0.0.1:8790';
+export const JQ = 'http://127.0.0.1:8791';
+export const BASE = 'http://127.0.0.1:8787';
 
 let seq = 0;
 /** テストごとに別の Google アカウントでログインする（データを分離するため） */
@@ -15,29 +17,29 @@ export async function login(page: Page, who?: { sub?: string; email?: string; na
   return id;
 }
 
-export async function saveMemo(page: Page, text: string) {
-  await page.locator('#memo-input').fill(text);
-  await page.locator('#memo-save').click();
-  await expect(page.getByTestId('memo-card').filter({ hasText: text.slice(0, 12) })).toBeVisible();
-}
-
-/** CDP のタッチイベントで指によるフリックを再現する */
-export async function flick(page: Page, target: Locator, dx: number) {
-  const box = await target.boundingBox();
-  if (!box) throw new Error('target not visible');
-  const y = box.y + box.height / 2;
-  const x0 = dx > 0 ? box.x + box.width * 0.2 : box.x + box.width * 0.8;
-  const cdp = await page.context().newCDPSession(page);
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: x0, y }] });
-  const steps = 10;
-  for (let i = 1; i <= steps; i++) {
-    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x0 + (dx * i) / steps, y }] });
-    await page.waitForTimeout(12);
-  }
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await cdp.detach();
+/** 端末の保存内容を消して、初めて開いた状態にする */
+export async function fresh(page: Page) {
+  await page.goto('/');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
 }
 
 export async function today(page: Page): Promise<string> {
   return page.evaluate(() => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10));
+}
+
+/** 追加シートで銘柄を入れて保存する */
+export async function addEntry(page: Page, f: { code?: string; name?: string; headline?: string; close?: string; changePct?: string }) {
+  await page.locator('[data-act="add"]:visible').first().click();
+  if (f.code) await page.locator('#f-code').fill(f.code);
+  if (f.name) await page.locator('#f-name').fill(f.name);
+  if (f.headline) await page.locator('#f-headline').fill(f.headline);
+  if (f.close) await page.locator('#f-close').fill(f.close);
+  if (f.changePct) await page.locator('#f-changePct').fill(f.changePct);
+  await page.getByTestId('save').click();
+  await expect(page.getByTestId('detail')).toBeVisible();
+}
+
+export async function jqStats(page: Page): Promise<Record<string, number>> {
+  return (await page.request.get(`${JQ}/__stats`)).json();
 }

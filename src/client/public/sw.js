@@ -1,6 +1,6 @@
 // アプリ外殻をキャッシュし、2回目以降は通信を待たずに開く
 // 置き場所（ドメイン直下 / サブパス）に関係なく動くよう、登録スコープを基準にする
-const CACHE = 'km-shell-v2';
+const CACHE = 'soubacho-shell-v1';
 const ROOT = new URL('./', self.registration.scope).pathname;
 
 self.addEventListener('install', (e) => {

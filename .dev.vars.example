@@ -1,5 +1,6 @@
-# ローカルで本物の Google ログインを試すときだけ使う（.dev.vars にコピー）
+# ローカルで本物の Google ログインや J-Quants を試すときだけ使う（.dev.vars にコピー）
 GOOGLE_CLIENT_ID=xxxxxxxx.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=xxxxxxxx
 SESSION_SECRET=ランダムな長い文字列
 ALLOWED_EMAILS=you@gmail.com
+JQUANTS_API_KEY=J-Quantsのダッシュボードで発行したAPIキー

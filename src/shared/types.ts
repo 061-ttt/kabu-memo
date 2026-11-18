@@ -1,8 +1,4 @@
-export type TaskStatus = 'todo' | 'doing' | 'done';
-export type Mark = 'strong' | 'weak' | null;
-
-export const TASK_FLOW: TaskStatus[] = ['todo', 'doing', 'done'];
-export const TASK_LABEL: Record<TaskStatus, string> = { todo: '未着手', doing: '進行中', done: '完了' };
+export type Mark = 'strong' | 'weak' | '';
 
 export interface User {
   id: string;
@@ -11,98 +7,107 @@ export interface User {
   picture: string | null;
 }
 
-export interface AnalysisItem {
+/** 話題株1件。画面で編集する項目はすべて data に入れる */
+export interface EntryData {
   code: string;
   name: string;
+  mark: Mark;
   theme: string;
   headline: string;
-  reaction: string;
+  takeaway: string;
+  material: string;
   caveat: string;
-  mark: Mark;
+  srcLabel: string;
+  srcUrl: string;
+  /** 手入力の株価・指標（自動取得できないときの予備） */
+  close: number | '';
+  change: number | '';
+  changePct: number | '';
+  perA: string;
+  perF: string;
+  pbr: string;
+  roe: string;
+  mcap: string;
+  volume: string;
+  /** 手で貼った日足 "YYYY-MM-DD,o,h,l,c,v;..." */
+  ohlc: string;
+  order: number;
+  sample: boolean;
 }
 
-export interface Analysis {
-  items: AnalysisItem[];
-  tasks: string[];
-  model: string;
-  at: number;
-}
-
-export interface Memo {
+export interface Entry {
   id: string;
   day: string;
-  body: string;
-  codes: string[];
-  analysis: Analysis | null;
+  data: EntryData;
   createdAt: number;
   updatedAt: number;
   deletedAt: number | null;
 }
 
-export interface Task {
-  id: string;
-  title: string;
-  status: TaskStatus;
-  code: string | null;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt: number | null;
+export interface NoteIndex {
+  name: string;
+  value: string;
+  chg: string;
 }
 
-export interface Metrics {
-  per?: number | null;
-  perForecast?: number | null;
-  pbr?: number | null;
-  roe?: number | null;
-  marketCap?: number | null; // 円
+export interface NoteData {
+  general: string;
+  us: string;
+  jp: string;
+  indices: NoteIndex[];
+  sample: boolean;
 }
 
-export interface Pick {
-  id: string;
+export interface Note {
   day: string;
-  code: string;
-  name: string;
-  theme: string;
-  headline: string;
-  reaction: string;
-  caveat: string;
-  mark: Mark;
-  metrics: Metrics;
-  createdAt: number;
+  data: NoteData;
   updatedAt: number;
-  deletedAt: number | null;
 }
 
-export interface Candle {
-  t: number; // UNIX秒
-  o: number;
-  h: number;
-  l: number;
-  c: number;
-  v: number;
+/** [日付, 始値, 高値, 安値, 終値, 出来高]（分割調整済み） */
+export type Bar = [string, number, number, number, number, number];
+
+export interface QuoteMetrics {
+  per: number | null;
+  perF: number | null;
+  pbr: number | null;
+  /** % */
+  roe: number | null;
+  /** 円 */
+  mcap: number | null;
 }
 
-export interface Market {
+export interface Quote {
   code: string;
   name: string;
-  price: number | null;
+  market: string;
+  sector: string;
+  /** 実際に値がある最後の営業日 */
+  day: string | null;
+  close: number | null;
   change: number | null;
   changePct: number | null;
   volume: number | null;
-  candles: Candle[];
-  source: string;
-  asOf: number;
+  bars: Bar[];
+  metrics: QuoteMetrics;
+  source: 'jquants' | 'yahoo' | 'mock' | 'none';
+  /** 指定日の値がまだ配信されていない（大引け後の更新待ち） */
+  pending: boolean;
+  /** 取得できなかった理由（あれば） */
+  note: string;
 }
 
-export type Range = '1mo' | '3mo' | '6mo';
-export const RANGES: Range[] = ['1mo', '3mo', '6mo'];
-
-export function nextStatus(s: TaskStatus): TaskStatus | null {
-  const i = TASK_FLOW.indexOf(s);
-  return i < TASK_FLOW.length - 1 ? TASK_FLOW[i + 1] : null;
+export interface Draft {
+  theme: string;
+  takeaway: string;
+  caveat: string;
+  mark: Mark;
+  material: string;
 }
 
-export function prevStatus(s: TaskStatus): TaskStatus | null {
-  const i = TASK_FLOW.indexOf(s);
-  return i > 0 ? TASK_FLOW[i - 1] : null;
+export interface ScreenRead {
+  code: string;
+  name: string;
+  headline: string;
+  material: string;
 }

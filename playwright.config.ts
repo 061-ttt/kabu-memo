@@ -9,7 +9,7 @@ export default defineConfig({
   expect: { timeout: 8_000 },
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   projects: [
-    // Cloudflare版（Worker＋D1、模擬Google・模擬AI）
+    // Cloudflare版（Worker＋D1、模擬Google・模擬J-Quants・模擬AI）
     { name: 'full', testDir: 'tests/e2e', use: { baseURL: 'http://127.0.0.1:8787' } },
     // 端末保存版（設定不要。GitHub Pages と同じサブパス配信）
     { name: 'local', testDir: 'tests/e2e-local', use: { baseURL: 'http://127.0.0.1:4317/kabu-memo/' } },
@@ -35,6 +35,11 @@ export default defineConfig({
     {
       command: 'node tests/e2e/mock-google.mjs',
       url: 'http://127.0.0.1:8790/health',
+      reuseExistingServer: false,
+    },
+    {
+      command: 'node tests/e2e/mock-jquants.mjs',
+      url: 'http://127.0.0.1:8791/health',
       reuseExistingServer: false,
     },
     {

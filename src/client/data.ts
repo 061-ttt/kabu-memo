@@ -1,5 +1,6 @@
 import { extractCodes } from '../shared/codes';
 import type { Analysis, AnalysisItem, Market, Memo, Pick, Range, Task, TaskStatus, User } from '../shared/types';
+import { LOCAL_ONLY } from './config';
 import { getState, type Kind, persistNow, resetLocalData, setState, toast } from './store';
 
 // ---------------- HTTP ----------------
@@ -29,10 +30,17 @@ let outbox: string[] = (() => {
     return [];
   }
 })();
-const saveOutbox = () => localStorage.setItem(OUTBOX, JSON.stringify(outbox));
+const saveOutbox = () => {
+  try {
+    localStorage.setItem(OUTBOX, JSON.stringify(outbox));
+  } catch {
+    /* 保存できなくても送信は続ける */
+  }
+};
 const pending = (kind: Kind, id: string) => outbox.includes(`${kind}:${id}`);
 
 function enqueue(kind: Kind, id: string) {
+  if (LOCAL_ONLY) return;
   const key = `${kind}:${id}`;
   if (!outbox.includes(key)) outbox.push(key);
   saveOutbox();
@@ -129,6 +137,14 @@ function mergeScope<T extends Memo | Task | Pick>(kind: Kind, inScope: (x: T) =>
 
 // ---------------- 認証 ----------------
 export async function checkAuth(): Promise<void> {
+  if (LOCAL_ONLY) {
+    // 削除済み（取り消し期間を過ぎたもの）を片付ける
+    const live = <T extends { deletedAt: number | null }>(r: Record<string, T>) =>
+      Object.fromEntries(Object.entries(r).filter(([, v]) => !v.deletedAt)) as Record<string, T>;
+    const s = getState();
+    setState({ user: null, authChecked: true, memos: live(s.memos), tasks: live(s.tasks), picks: live(s.picks) });
+    return;
+  }
   try {
     const { user } = await req<{ user: User }>('GET', '/api/me');
     const s = getState();
@@ -157,6 +173,7 @@ export async function logout(): Promise<void> {
 }
 
 export function login(): void {
+  if (LOCAL_ONLY) return;
   location.href = `/auth/login?next=${encodeURIComponent('/')}`;
 }
 

@@ -3,6 +3,7 @@ import { isStockCode, toHalfWidth } from '../../shared/codes';
 import { RANGES, type Market, type Memo, type Metrics, type Pick, type Range } from '../../shared/types';
 import { aiFillPick, deletePick, loadMarket, login, newPick, relatedMemos, savePick } from '../data';
 import { useCountUp, useFlip } from '../motion';
+import { LOCAL_ONLY } from '../config';
 import { getState, setState, useStore } from '../store';
 import { CandleChart, Sparkline } from './Chart';
 import { Sheet } from './Chrome';
@@ -116,7 +117,7 @@ function PickRow({ pick, index }: { pick: Pick; index: number }) {
         }}
       >
         <div
-          class="card glass pick press"
+          class={`card glass pick press${LOCAL_ONLY ? ' local' : ''}`}
           role="button"
           tabIndex={0}
           data-code={pick.code}
@@ -127,11 +128,15 @@ function PickRow({ pick, index }: { pick: Pick; index: number }) {
             <span>{pick.name || market?.name || pick.code}</span>
             <span class="code">{pick.code}</span>
           </div>
-          <div class="pick-spark">{market && <Sparkline candles={market.candles} />}</div>
-          <div class="pick-right">
-            <span class="price">{price == null ? '—' : fmt(price)}</span>
-            <Change m={market} />
-          </div>
+          {!LOCAL_ONLY && (
+            <>
+              <div class="pick-spark">{market && <Sparkline candles={market.candles} />}</div>
+              <div class="pick-right">
+                <span class="price">{price == null ? '—' : fmt(price)}</span>
+                <Change m={market} />
+              </div>
+            </>
+          )}
           {(pick.headline || pick.theme || pick.mark) && (
             <div class="pick-head">
               {pick.mark && (
@@ -204,7 +209,7 @@ export function PickSheet({ id }: { id: string }) {
         </div>
       </div>
 
-      {!user ? (
+      {LOCAL_ONLY ? null : !user ? (
         <div class="chart-wrap" style={{ padding: 16, marginTop: 14 }}>
           <button class="btn primary block press" onClick={login}>
             Googleでログイン
@@ -251,6 +256,7 @@ export function PickSheet({ id }: { id: string }) {
           display={fmtCap(pick.metrics.marketCap)}
           i={4}
         />
+        {!LOCAL_ONLY && (
         <div class="metric" style={{ '--i': 5 }}>
           <label>出来高</label>
           <div class="row">
@@ -260,6 +266,7 @@ export function PickSheet({ id }: { id: string }) {
             <span class="unit">千株</span>
           </div>
         </div>
+        )}
       </div>
 
       <h3>見出し</h3>
@@ -272,9 +279,11 @@ export function PickSheet({ id }: { id: string }) {
       </div>
 
       <div class="sheet-actions">
-        <button class={`btn ai press${analyzing ? ' analyzing' : ''}`} onClick={() => void aiFillPick(id)} disabled={analyzing} data-testid="pick-ai">
-          <IconSpark /> {analyzing ? '分析中' : 'AIで補完'}
-        </button>
+        {!LOCAL_ONLY && (
+          <button class={`btn ai press${analyzing ? ' analyzing' : ''}`} onClick={() => void aiFillPick(id)} disabled={analyzing} data-testid="pick-ai">
+            <IconSpark /> {analyzing ? '分析中' : 'AIで補完'}
+          </button>
+        )}
         <a class="btn press" href={`https://kabutan.jp/stock/?code=${pick.code}`} target="_blank" rel="noopener noreferrer">
           株探 <IconExternal />
         </a>

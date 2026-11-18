@@ -49,6 +49,14 @@ function load(): Partial<Persisted> {
   }
 }
 
+function safeGet(key: string): string | null {
+  try {
+    return sessionStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
 const saved = load();
 
 let state: State = {
@@ -56,7 +64,7 @@ let state: State = {
   ownerId: saved.ownerId ?? null,
   authChecked: false,
   day: todayJst(),
-  tab: (sessionStorage.getItem('km:tab') as Tab) || 'memo',
+  tab: (safeGet('km:tab') as Tab) || 'memo',
   dir: 'u',
   memos: saved.memos ?? {},
   tasks: saved.tasks ?? {},
@@ -82,7 +90,13 @@ export function setState(patch: Partial<State> | ((s: State) => Partial<State>))
   const next = typeof patch === 'function' ? patch(state) : patch;
   state = { ...state, ...next };
   if ('memos' in next || 'tasks' in next || 'picks' in next || 'user' in next || 'ownerId' in next) schedulePersist();
-  if ('tab' in next) sessionStorage.setItem('km:tab', state.tab);
+  if ('tab' in next) {
+    try {
+      sessionStorage.setItem('km:tab', state.tab);
+    } catch {
+      /* 使えない環境では覚えない */
+    }
+  }
   subs.forEach((f) => f());
 }
 

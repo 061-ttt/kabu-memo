@@ -1,8 +1,10 @@
 // アプリ外殻をキャッシュし、2回目以降は通信を待たずに開く
-const CACHE = 'km-shell-v1';
+// 置き場所（ドメイン直下 / サブパス）に関係なく動くよう、登録スコープを基準にする
+const CACHE = 'km-shell-v2';
+const ROOT = new URL('./', self.registration.scope).pathname;
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['/'])));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll([ROOT])));
   self.skipWaiting();
 });
 
@@ -15,16 +17,17 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   const url = new URL(req.url);
   if (req.method !== 'GET' || url.origin !== location.origin) return;
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) return;
+  const path = url.pathname;
+  if (path.startsWith(`${ROOT}api/`) || path.startsWith(`${ROOT}auth/`)) return;
 
   if (req.mode === 'navigate') {
     // stale-while-revalidate: キャッシュを即返し、裏で更新
     e.respondWith(
       caches.open(CACHE).then(async (c) => {
-        const hit = await c.match('/');
+        const hit = await c.match(ROOT);
         const net = fetch(req)
           .then((r) => {
-            if (r.ok) c.put('/', r.clone());
+            if (r.ok) c.put(ROOT, r.clone());
             return r;
           })
           .catch(() => hit);
@@ -34,7 +37,7 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  if (url.pathname.startsWith('/assets/') || /\.(svg|png|webmanifest)$/.test(url.pathname)) {
+  if (path.startsWith(`${ROOT}assets/`) || /\.(svg|png|webmanifest)$/.test(path)) {
     e.respondWith(
       caches.open(CACHE).then(async (c) => {
         const hit = await c.match(req);

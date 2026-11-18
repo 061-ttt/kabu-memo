@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "build:local": "VITE_LOCAL_ONLY=1 vite build",
     "dev": "vite build && wrangler dev",
     "typecheck": "tsc -p tsconfig.client.json && tsc -p tsconfig.worker.json && tsc -p tsconfig.unit.json && tsc -p tsconfig.json",
     "test:unit": "vitest run",
     "e2e:db": "rm -rf .wrangler/e2e && wrangler d1 migrations apply DB --local -c wrangler.e2e.jsonc --persist-to .wrangler/e2e",
     "test:e2e": "playwright test",
-    "test": "npm run typecheck && npm run test:unit && npm run build && npm run test:e2e",
+    "test": "npm run typecheck && npm run test:unit && npm run build && npm run build:local && npm run test:e2e",
     "deploy": "vite build && wrangler deploy && wrangler d1 migrations apply DB --remote"
   },
   "dependencies": {

@@ -6,6 +6,7 @@ import { reduced } from './motion';
 declare global {
   interface Window {
     __kmSave?: (text: string) => void;
+    __kmBoot?: number;
   }
 }
 
@@ -39,6 +40,36 @@ export function enhanceComposer(): void {
     grow();
     renderChips();
   });
+
+  // インラインスクリプトが動かなかった環境（厳しいCSPなど）では、ここで同じ動作を付ける
+  if (!window.__kmBoot) {
+    const save = () => {
+      const v = t.value.trim();
+      if (v) window.__kmSave?.(v);
+    };
+    document.getElementById('memo-save')?.addEventListener('click', () => {
+      save();
+      t.focus();
+    });
+    t.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        save();
+      }
+    });
+    t.addEventListener('input', () => {
+      try {
+        localStorage.setItem('km:draft', t.value);
+      } catch {
+        /* noop */
+      }
+    });
+    try {
+      t.value ||= localStorage.getItem('km:draft') ?? '';
+    } catch {
+      /* noop */
+    }
+  }
 
   window.__kmSave = (text: string) => {
     const memo = addMemo(text);

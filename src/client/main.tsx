@@ -35,5 +35,11 @@ if (err) {
 }
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  addEventListener('load', () => void navigator.serviceWorker.register('/sw.js').catch(() => undefined));
+  addEventListener('load', () => {
+    try {
+      void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => undefined);
+    } catch {
+      /* 埋め込み表示などで使えない環境 */
+    }
+  });
 }

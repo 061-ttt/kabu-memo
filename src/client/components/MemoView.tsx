@@ -2,6 +2,7 @@ import { useRef } from 'preact/hooks';
 import type { AnalysisItem, Memo } from '../../shared/types';
 import { addTask, analyzeMemo, deleteMemo, pickFromAnalysis } from '../data';
 import { useFlip } from '../motion';
+import { LOCAL_ONLY } from '../config';
 import { setState, toast, useStore } from '../store';
 import { ScreenSkeleton } from './Skeleton';
 import { Swipe } from './Swipe';
@@ -56,15 +57,19 @@ function MemoCard({ memo, index }: { memo: Memo; index: number }) {
     <div style={{ '--i': Math.min(index, 8) }} data-flip={memo.id}>
       <Swipe
         testId="memo-card"
-        right={{
-          label: (
-            <>
-              <IconSpark size={18} /> AI分析
-            </>
-          ),
-          color: 'linear-gradient(120deg,#7c3aed,#0ea5e9)',
-          run: () => void analyzeMemo(memo.id),
-        }}
+        right={
+          LOCAL_ONLY
+            ? null
+            : {
+                label: (
+                  <>
+                    <IconSpark size={18} /> AI分析
+                  </>
+                ),
+                color: 'linear-gradient(120deg,#7c3aed,#0ea5e9)',
+                run: () => void analyzeMemo(memo.id),
+              }
+        }
         left={{
           label: (
             <>
@@ -93,7 +98,7 @@ function MemoCard({ memo, index }: { memo: Memo; index: number }) {
             </div>
           ) : memo.analysis ? (
             <AnalysisView memo={memo} />
-          ) : (
+          ) : LOCAL_ONLY ? null : (
             <div class="card-actions">
               <button class="pill-btn ai press" onClick={() => void analyzeMemo(memo.id)} data-testid="analyze">
                 <IconSpark size={14} /> AI分析

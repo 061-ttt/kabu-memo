@@ -34,6 +34,7 @@
   </section>
   <script>
   (function () {
+    window.__kmBoot = 1;
     var t = document.getElementById('memo-input'), K = 'km:draft', Q = 'km:bootq';
     try { var d = localStorage.getItem(K); if (d) t.value = d; } catch (e) {}
     t.addEventListener('input', function () { try { localStorage.setItem(K, t.value); } catch (e) {} });

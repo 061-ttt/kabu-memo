@@ -20,6 +20,18 @@
 
 設計の元にしたプロンプトは [docs/PROMPT.md](docs/PROMPT.md)。
 
+## 2つの版
+
+| | 端末保存版 | Cloudflare版 |
+|---|---|---|
+| 必要な設定 | なし | Cloudflare・Google（下の「デプロイ」） |
+| メモ・銘柄ノート・タスク・フリック | ○ | ○ |
+| 保存先 | その端末のブラウザだけ | サーバー（D1）。端末間で同期 |
+| Googleログイン・AI分析・株価チャート | — | ○ |
+| ビルド | `npm run build:local` → `dist-local/` | `npm run build` → `dist/` |
+
+端末保存版は、テスト合格後に自動で `gh-pages` ブランチへ出力される。GitHub の Settings → Pages で「Deploy from a branch」→ `gh-pages` を選ぶと `https://061-ttt.github.io/kabu-memo/` で開ける。どこに置いても動くよう、すべて相対パスで出力している。
+
 ## 技術選定と理由
 
 | 領域 | 採用 | 理由 | 比べた候補 |
@@ -50,7 +62,8 @@ src/
   shared/       銘柄コード抽出・日付（JST）・型
 migrations/     D1 スキーマ
 tests/unit/     Vitest
-tests/e2e/      Playwright（模擬 Google OAuth サーバー付き）
+tests/e2e/      Playwright：Cloudflare版（模擬 Google OAuth サーバー付き）
+tests/e2e-local/ Playwright：端末保存版（サブパス配信の静的サーバー付き）
 ```
 
 ## セキュリティ
@@ -72,7 +85,9 @@ npx playwright install chromium   # 初回のみ
 npm test                          # 型チェック → 単体 → ビルド → 実ブラウザE2E
 ```
 
-結果：単体 23件、E2E 31件すべて合格（受け入れ基準11項目＋セキュリティ・アクセシビリティ）。E2Eは `wrangler dev` をローカルで起動し、ローカルD1・模擬Google・模擬AIで動かす。
+結果：単体 23件、E2E 37件すべて合格。
+- Cloudflare版 31件：受け入れ基準11項目＋セキュリティ・アクセシビリティ。`wrangler dev` をローカルで起動し、ローカルD1・模擬Google・模擬AIで動かす
+- 端末保存版 6件：GitHub Pages と同じサブパス配信で、サーバーへ一切通信しないこと、インラインスクリプトが止められても動くことまで確認
 
 ## デプロイ（Cloudflare）
 

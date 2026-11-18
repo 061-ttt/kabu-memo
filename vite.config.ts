@@ -47,10 +47,14 @@ function securityHeaders(): Plugin {
   };
 }
 
+// VITE_LOCAL_ONLY=1 は端末保存版。どこに置いても動くよう相対パスで出力する
+const local = process.env.VITE_LOCAL_ONLY === '1';
+
 export default defineConfig({
   root: 'src/client',
   publicDir: 'public',
-  build: { outDir: '../../dist', emptyOutDir: true, target: 'es2022', modulePreload: { polyfill: false } },
+  base: local ? './' : '/',
+  build: { outDir: local ? '../../dist-local' : '../../dist', emptyOutDir: true, target: 'es2022', modulePreload: { polyfill: false } },
   esbuild: { jsx: 'automatic', jsxImportSource: 'preact' },
   plugins: [securityHeaders()],
 });

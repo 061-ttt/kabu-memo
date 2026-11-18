@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { addDays, formatDayShort, todayJst } from '../../shared/day';
 import { login, logout } from '../data';
 import { spring } from '../motion';
+import { LOCAL_ONLY } from '../config';
 import { getState, setState, type Tab, useStore } from '../store';
 import { IconChart, IconCheck, IconLeft, IconMemo, IconRight, IconUser } from './icons';
 
@@ -45,6 +46,7 @@ export function UserMenu() {
     addEventListener('pointerdown', close);
     return () => removeEventListener('pointerdown', close);
   }, [open]);
+  if (LOCAL_ONLY) return null;
   if (!user)
     return (
       <button class="login-btn press" onClick={login} data-testid="login">

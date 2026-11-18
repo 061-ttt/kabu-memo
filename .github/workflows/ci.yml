@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cloudflare の鍵がなければデプロイしない
+        id: gate
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::notice::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID が未設定のためデプロイを省略しました"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.ok == 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - if: steps.gate.outputs.ok == 'true'
+        run: npm ci && npm run build
+      # D1 は初回デプロイ時に自動作成される（wrangler の自動プロビジョニング）
+      - name: Deploy Worker
+        if: steps.gate.outputs.ok == 'true'
+        run: npx wrangler deploy
+      - name: Apply D1 migrations
+        if: steps.gate.outputs.ok == 'true'
+        run: npx wrangler d1 migrations apply kabu-memo --remote
+      - name: Set secrets
+        if: steps.gate.outputs.ok == 'true'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          ALLOWED_EMAILS: ${{ secrets.ALLOWED_EMAILS }}
+        run: |
+          node -e '
+            const crypto = require("node:crypto");
+            const out = {
+              GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+              GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+              SESSION_SECRET: process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex"),
+              ALLOWED_EMAILS: process.env.ALLOWED_EMAILS,
+            };
+            for (const k of Object.keys(out)) if (!out[k]) delete out[k];
+            require("node:fs").writeFileSync("secrets.json", JSON.stringify(out));
+          '
+          npx wrangler secret bulk secrets.json
+          rm secrets.json

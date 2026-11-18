@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kabu-memo",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/auth/*"]
+  },
+  // database_id は初回 deploy 時に自動作成（wrangler の自動プロビジョニング）
+  "d1_databases": [{ "binding": "DB", "database_name": "kabu-memo", "migrations_dir": "migrations" }],
+  "ai": { "binding": "AI" },
+  "vars": {
+    "AI_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    "AI_DAILY_LIMIT": "60"
+  },
+  // GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / SESSION_SECRET / ALLOWED_EMAILS は wrangler secret で設定
+  "observability": { "enabled": true }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "kabu-memo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build && wrangler dev",
+    "typecheck": "tsc -p tsconfig.client.json && tsc -p tsconfig.worker.json && tsc -p tsconfig.unit.json && tsc -p tsconfig.json",
+    "test:unit": "vitest run",
+    "e2e:db": "rm -rf .wrangler/e2e && wrangler d1 migrations apply DB --local -c wrangler.e2e.jsonc --persist-to .wrangler/e2e",
+    "test:e2e": "playwright test",
+    "test": "npm run typecheck && npm run test:unit && npm run build && npm run test:e2e",
+    "deploy": "vite build && wrangler deploy && wrangler d1 migrations apply DB --remote"
+  },
+  "dependencies": {
+    "hono": "^4.13.19",
+    "preact": "^10.29.8",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261118.1",
+    "@playwright/test": "1.63",
+    "@preact/preset-vite": "^2.10.6",
+    "@types/node": "^22.20.5",
+    "typescript": "5.9",
+    "vite": "^7.3.8",
+    "vitest": "^3.2.7",
+    "wrangler": "^4.164.0"
+  }
+}
